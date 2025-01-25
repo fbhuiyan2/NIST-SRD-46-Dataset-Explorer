@@ -5,7 +5,7 @@ import pandas as pd
 @st.cache_data
 def load_data():
     # Example: Read from CSV (replace with actual file path)
-    df = pd.read_csv("db_clean.csv")  
+    df = pd.read_csv("db_clean_gzip_compressed", compression='gzip')  
     return df
 
 df_main = load_data()
