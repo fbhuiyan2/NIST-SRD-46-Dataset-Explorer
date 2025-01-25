@@ -12,6 +12,6 @@ Note, the database files in this repo are gzipped due to Github's file size rest
 df = pd.read_csv("db_clean_gzip_compressed", compression='gzip')
 df.to_csv('db_clean.csv', index=False) 
 ```
-After you decompress the gzip compressed files to a csv file, you can use any text editor or Excel to look at the csv file. For Excel, you may need to change the encoder to see the proper text since the csv database here uses utf-8 unicode characters. A possible way to change the encoder in Excel can be found [here](https://support.microsoft.com/en-us/office/choose-text-encoding-when-you-open-and-save-files-60d59c21-88b5-4006-831c-d536d42fd861)
+After you decompress the gzip compressed files to a csv file, you can use any text editor or Excel to look at the csv file. For Excel, you may need to change the encoder to see the proper text since the csv database here uses utf-8 unicode characters. A possible way to change the encoder in Excel can be found [here](https://support.microsoft.com/en-us/office/choose-text-encoding-when-you-open-and-save-files-60d59c21-88b5-4006-831c-d536d42fd861).
 
 Check out the [streamlit app](https://nist-srd-46.streamlit.app/)!
