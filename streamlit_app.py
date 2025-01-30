@@ -11,6 +11,7 @@ df_main = load_data()
 
 # App title and description
 st.title('🔍 Metal-Ligand Query App')
+st.markdown("**Data Source: National Institute of Standards and Technology (NIST)**")
 st.write("Filter the dataset by selecting metals, ligand classes, and ligands. Leave blank for no preference.")
 
 # Sidebar with dataset info
