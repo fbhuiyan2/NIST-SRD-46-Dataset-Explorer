@@ -1,65 +1,85 @@
 import streamlit as st
 import pandas as pd
 
-# Load your DataFrame (replace with actual data source)
+# Load dataset with caching
 @st.cache_data
 def load_data():
-    # Example: Read from CSV (replace with actual file path)
     df = pd.read_csv("db_clean_gzip_compressed", compression='gzip')  
     return df
 
 df_main = load_data()
 
-# Set the app title
-st.title('Metal-Ligand Query App')
+# App title and description
+st.title('🔍 Metal-Ligand Query App')
+st.markdown("**Data Source: National Institute of Standards and Technology (NIST)**")
+st.write("Filter the dataset by selecting metals, ligand classes, and ligands. Leave blank for no preference.")
 
-st.write('Please select search criteria below. Leave blank for no preference.')
+# Sidebar with dataset info
+with st.sidebar:
+    st.subheader("Dataset Overview")
+    st.write(f"📌 Total entries: {df_main.shape[0]}")
+    st.write(f"🧪 Unique metals: {df_main['Metal'].nunique()}")
+    st.write(f"🔗 Unique ligands: {df_main['Ligand'].nunique()}")
+    st.write(f"🛠️ Unique ligand classes: {df_main['Ligand_class'].nunique()}")
 
-# Get unique values for dropdown menus, adding an empty option for 'no preference'
-metals = [''] + sorted(df_main['Metal'].unique())
-ligand_classes = [''] + sorted(df_main['Ligand_class'].unique())
+# Search criteria
+col1, col2, col3 = st.columns(3)
 
-# User selections
-metal_selection = st.selectbox('Select metal:', options=metals)
-ligand_class_selection = st.selectbox('Select ligand class:', options=ligand_classes)
+with col1:
+    metal_selection = st.multiselect('Select metal(s):', options=sorted(df_main['Metal'].unique()))
 
-# Update ligand options based on selected ligand class
+with col2:
+    ligand_class_selection = st.selectbox('Select ligand class:', options=[''] + sorted(df_main['Ligand_class'].unique()))
+
+# Update available ligands based on ligand class selection
 if ligand_class_selection:
-    # Filter ligands based on selected ligand class
     available_ligands = df_main[df_main['Ligand_class'] == ligand_class_selection]['Ligand'].unique()
-    ligands = [''] + sorted(available_ligands)
-    ligand_label = f"Available ligands in ligand class: {ligand_class_selection}"
 else:
-    # If no ligand class is selected, show all ligands
-    ligands = [''] + sorted(df_main['Ligand'].unique())
-    ligand_label = "Select ligand:"
+    available_ligands = df_main['Ligand'].unique()
 
-ligand_selection = st.selectbox(ligand_label, options=ligands)
+with col3:
+    ligand_selection = st.multiselect('Select ligand(s):', options=sorted(available_ligands))
 
-# Apply filters based on user selections
+# Apply filters
 filtered_df = df_main.copy()
 
 if metal_selection:
-    filtered_df = filtered_df[filtered_df['Metal'] == metal_selection]
+    filtered_df = filtered_df[filtered_df['Metal'].isin(metal_selection)]
 if ligand_selection:
-    filtered_df = filtered_df[filtered_df['Ligand'] == ligand_selection]
+    filtered_df = filtered_df[filtered_df['Ligand'].isin(ligand_selection)]
 if ligand_class_selection:
     filtered_df = filtered_df[filtered_df['Ligand_class'] == ligand_class_selection]
 
-# Display the filtered DataFrame
+# Display results
+st.subheader("🔎 Filtered Results")
 if not filtered_df.empty:
-    st.write('Filtered Results:')
-    st.write(filtered_df)
-    # Display total results count
-    st.write(f"**Total results found:** {filtered_df.shape[0]}")
+    st.write(f"✅ **Total results found:** {filtered_df.shape[0]}")
     
-    # Add a download button for the filtered DataFrame
+    # Display results in an expandable container
+    with st.expander("📄 View Filtered Data"):
+        st.dataframe(filtered_df)
+
+    # Bar chart visualization (if relevant)
+    st.subheader("📊 Data Distribution")
+    col_chart1, col_chart2 = st.columns(2)
+    with col_chart1:
+        st.bar_chart(filtered_df['Metal'].value_counts())
+
+    with col_chart2:
+        st.bar_chart(filtered_df['Ligand'].value_counts())
+
+    # Download option
     csv = filtered_df.to_csv(index=False)
     st.download_button(
-        label="Download data as CSV",
+        label="⬇️ Download results as CSV",
         data=csv,
         file_name='filtered_data.csv',
         mime='text/csv'
     )
 else:
-    st.write('No results found for the given criteria.')
+    st.warning("⚠️ No results found. Try adjusting the filters.")
+
+# Reset Filters Button
+if st.button("🔄 Clear Filters"):
+    st.experimental_rerun()
+
