@@ -86,7 +86,7 @@ if not filtered_df.empty:
         st.bar_chart(filtered_df['Ligand_class'].value_counts(), use_container_width=True, y_label = "Count")
 
     with col_chart2:
-        st.bar_chart(filtered_df['Ligand'].value_counts(), use_container_width=True, y_label = "Count"
+        st.bar_chart(filtered_df['Ligand'].value_counts(), use_container_width=True, y_label = "Count")
 
     # Download option
     csv = filtered_df.to_csv(index=False)
