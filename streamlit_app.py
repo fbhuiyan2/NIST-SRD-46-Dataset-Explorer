@@ -83,9 +83,11 @@ if not filtered_df.empty:
     st.subheader("📊 Data Distribution")
     col_chart1, col_chart2 = st.columns(2)
     with col_chart1:
+        st.markdown("<p style='text-align: center; color: white;'>Ligand class(es)</p>", unsafe_allow_html=True)
         st.bar_chart(filtered_df['Ligand_class'].value_counts(), use_container_width=True, y_label = "Count")
 
     with col_chart2:
+        st.markdown("<p style='text-align: center; color: white;'>Ligand(s)</p>", unsafe_allow_html=True)
         st.bar_chart(filtered_df['Ligand'].value_counts(), use_container_width=True, y_label = "Count")
 
     # Download option
