@@ -1,6 +1,23 @@
 import streamlit as st
 import pandas as pd
 
+def get_filtered_df(df_main):
+    filtered_df = df_main.copy()
+
+    if metal_selection:
+        filtered_df = filtered_df[filtered_df['Metal'] == metal_selection]
+
+
+    if ligand_class_selection:
+        filtered_df = filtered_df[
+            filtered_df['Ligand_class'].isin(ligand_class_selection)
+        ]
+
+    if ligand_selection:
+        filtered_df = filtered_df[filtered_df['Ligand'].isin(ligand_selection)]
+
+    return filtered_df
+
 # Load dataset with caching
 @st.cache_data
 def load_data():
@@ -26,29 +43,32 @@ with st.sidebar:
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    metal_selection = st.multiselect('Select metal(s):', options=sorted(df_main['Metal'].unique()))
+    metal_selection = st.selectbox('Select metal:', options=[''] + sorted(df_main['Metal'].unique()))
 
 with col2:
-    ligand_class_selection = st.selectbox('Select ligand class:', options=[''] + sorted(df_main['Ligand_class'].unique()))
+    if metal_selection:
+        ligand_class_options = sorted(df_main[df_main['Metal'] == metal_selection]['Ligand_class'].unique())
+    else:
+        ligand_class_options = sorted(df_main['Ligand_class'].unique())
+        
+    ligand_class_selection = st.multiselect('Select ligand class(es):', options=sorted(ligand_class_options))
 
 # Update available ligands based on ligand class selection
 if ligand_class_selection:
-    available_ligands = df_main[df_main['Ligand_class'] == ligand_class_selection]['Ligand'].unique()
+    ligand_options = sorted(df_main[df_main['Ligand_class'].isin(ligand_class_selection)]['Ligand'].unique())
+    if metal_selection:
+        ligand_options = sorted(df_main[(df_main['Metal'] == metal_selection) & (df_main['Ligand_class'].isin(ligand_class_selection))]['Ligand'].unique())
 else:
-    available_ligands = df_main['Ligand'].unique()
+    if metal_selection:
+        ligand_options = sorted(df_main[df_main['Metal'] == metal_selection]['Ligand'].unique())
+    else:
+        ligand_options = sorted(df_main['Ligand'].unique())
 
 with col3:
-    ligand_selection = st.multiselect('Select ligand(s):', options=sorted(available_ligands))
+    ligand_selection = st.multiselect('Select ligand(s):', options=sorted(ligand_options))
 
 # Apply filters
-filtered_df = df_main.copy()
-
-if metal_selection:
-    filtered_df = filtered_df[filtered_df['Metal'].isin(metal_selection)]
-if ligand_selection:
-    filtered_df = filtered_df[filtered_df['Ligand'].isin(ligand_selection)]
-if ligand_class_selection:
-    filtered_df = filtered_df[filtered_df['Ligand_class'] == ligand_class_selection]
+filtered_df = get_filtered_df(df_main)
 
 # Display results
 st.subheader("🔎 Filtered Results")
@@ -63,10 +83,10 @@ if not filtered_df.empty:
     st.subheader("📊 Data Distribution")
     col_chart1, col_chart2 = st.columns(2)
     with col_chart1:
-        st.bar_chart(filtered_df['Metal'].value_counts())
+        st.bar_chart(filtered_df['Ligand_class'].value_counts(), use_container_width=True, y_label = "Count")
 
     with col_chart2:
-        st.bar_chart(filtered_df['Ligand'].value_counts())
+        st.bar_chart(filtered_df['Ligand'].value_counts(), use_container_width=True, y_label = "Count"
 
     # Download option
     csv = filtered_df.to_csv(index=False)
@@ -79,7 +99,5 @@ if not filtered_df.empty:
 else:
     st.warning("⚠️ No results found. Try adjusting the filters.")
 
-# Reset Filters Button
-if st.button("🔄 Clear Filters"):
-    st.experimental_rerun()
+
 
